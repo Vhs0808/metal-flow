@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class ConnectionFactory {
     private static final String URL=
-            "jdbc:mysql://localhost:3306/MetalFlow_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo";
+            "jdbc:mysql://localhost:3306/MetalFlow?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=America/Sao_Paulo";
     private static final String USERNAME ="root";
     private static final String PASSWORD ="root";
 

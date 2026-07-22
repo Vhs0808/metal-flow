@@ -2,7 +2,7 @@ package com.metalflow.model;
 
 import com.metalflow.enums.StatusOP;
 
-import java.time.LocalTime;
+import java.time.LocalDateTime;
 
 public class OrdensProducao {
     private int id;
@@ -12,11 +12,11 @@ public class OrdensProducao {
     private int quantidade_planejada;
     private int saldo_op;
     private StatusOP  status_op;
-    private LocalTime criado_em;
+    private LocalDateTime criado_em;
 
     public OrdensProducao(){}
 
-    public OrdensProducao(int id, String numero_op, String codigo_produto, String descricao_produto, int quantidade_planejada, int saldo_op, StatusOP status_op, LocalTime criado_em) {
+    public OrdensProducao(int id, String numero_op, String codigo_produto, String descricao_produto, int quantidade_planejada, int saldo_op, StatusOP status_op, LocalDateTime criado_em) {
         this.id = id;
         this.numero_op = numero_op;
         this.codigo_produto = codigo_produto;
@@ -55,7 +55,7 @@ public class OrdensProducao {
 
     public void setStatus_op(StatusOP status_op) {this.status_op = status_op;}
 
-    public LocalTime getCriado_em() {return criado_em;}
+    public LocalDateTime getCriado_em() {return criado_em;}
 
-    public void setCriado_em(LocalTime criado_em) {this.criado_em = criado_em;}
+    public void setCriado_em(LocalDateTime criado_em) {this.criado_em = criado_em;}
 }
