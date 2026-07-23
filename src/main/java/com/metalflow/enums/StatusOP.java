@@ -1,7 +1,7 @@
 package com.metalflow.enums;
 
 public enum StatusOP {
-    ABERTO,
+    ABERTA,
     EM_PRODUÇÃO,
     CONCLUIDA
 }
