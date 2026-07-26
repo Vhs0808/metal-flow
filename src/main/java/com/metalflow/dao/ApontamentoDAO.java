@@ -1,5 +1,6 @@
 package com.metalflow.dao;
 
+import com.metalflow.model.Apontamentos;
 import com.metalflow.util.ConnectionFactory;
 
 import java.sql.Connection;
@@ -46,5 +47,25 @@ public class ApontamentoDAO {
         }
 
         return apontamentos;
+    }
+
+    public void inserirApontamento(Apontamentos apontamento){
+        String sql = "INSERT INTO APONTAMENTOS (ordem_id, setor_id, quantidade_apontada) VALUES (?,?,?)";
+
+        try(
+                Connection conn = ConnectionFactory.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)
+                ){
+
+            stmt.setInt(1, apontamento.getOrdem_id());
+            stmt.setInt(2, apontamento.getSetor_id());
+            stmt.setInt(3, apontamento.getQuantidade_apontada());
+
+
+            try(ResultSet rs = stmt.executeQuery()){}
+
+        }catch (SQLException e){
+            throw new RuntimeException("Erro ao inserir um apontamento " + e);
+        }
     }
 }
