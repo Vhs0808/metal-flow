@@ -10,12 +10,12 @@ import java.util.List;
 
 public class OrdensDAO {
 
-    public List<OrdensProducao> buscarOrdens(/*ITENS PARA PAGINAÇÃO*/){
+    public List<OrdensProducao> buscarOrdens(/*ITENS PARA FILTRAGEM*/){
         List<OrdensProducao> listaOrdens = new ArrayList<>();
 
 
         /*
-            LÓGICA DA PAGINAÇÃO
+            LÓGICA DA FILTRAGEM
         */
 
         String sql = "SELECT * FROM ordens_producao";
@@ -59,7 +59,7 @@ public class OrdensDAO {
             stmt.setString(2, ordem.getCodigo_produto());
             stmt.setString(3, ordem.getDescricao_produto());
             stmt.setInt(4, ordem.getQuantidade_planejada());
-            stmt.setInt(5, ordem.getQuantidade_planejada());
+            stmt.setInt(5, ordem.getSaldo_op());
 
             stmt.executeUpdate();
 
