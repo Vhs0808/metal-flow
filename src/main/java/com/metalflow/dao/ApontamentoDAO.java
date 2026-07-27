@@ -1,6 +1,7 @@
 package com.metalflow.dao;
 
-import com.metalflow.model.Apontamentos;
+import com.metalflow.dto.ApontamentoDTO;
+import com.metalflow.enums.StatusOP;
 import com.metalflow.util.ConnectionFactory;
 
 import java.sql.Connection;
@@ -49,23 +50,132 @@ public class ApontamentoDAO {
         return apontamentos;
     }
 
-    public void inserirApontamento(Apontamentos apontamento){
-        String sql = "INSERT INTO APONTAMENTOS (ordem_id, setor_id, quantidade_apontada) VALUES (?,?,?)";
+    public Map<String,Object> inserirApontamento(int ordemId, ApontamentoDTO apontamentoDTO){
 
-        try(
-                Connection conn = ConnectionFactory.getConnection();
-                PreparedStatement stmt = conn.prepareStatement(sql)
-                ){
+        String sqlBuscarOrdem = """
+                    SELECT id, codigo_produto, saldo_op
+                    FROM ordens_producao
+                    WHERE id = ?
+                    FOR UPDATE
+                """;
 
-            stmt.setInt(1, apontamento.getOrdem_id());
-            stmt.setInt(2, apontamento.getSetor_id());
-            stmt.setInt(3, apontamento.getQuantidade_apontada());
+        String sqlBuscarSetor = """
+                    SELECT id
+                    FROM setores
+                    WHERE codigo = ?
+                    AND ativo = TRUE
+                """;
 
+        String sqlInserirApontamento = """
+                    INSERT INTO apontamentos (quantidade_apontada, setor_id, ordem_id)
+                    VALUES (?, ?, ?)
+                """;
 
-            try(ResultSet rs = stmt.executeQuery()){}
+        String sqlAtualizarOrdemProducao = """
+                    UPDATE ordens_producao
+                    SET saldo_op = ?, status_op = ?
+                    WHERE id = ?
+                """;
 
-        }catch (SQLException e){
-            throw new RuntimeException("Erro ao inserir um apontamento " + e);
+        String sqlAtualizarEstoque = """
+                    INSERT INTO estoque_setor (codigo_produto, quantidade,  setor_id, ordem_id)
+                    VALUES (?,?,?,?)
+                    ON DUPLICATE KEY UPDATE
+                    quantidade = quantidade + VALUES(quantidade)
+                """;
+
+        try(Connection conn = ConnectionFactory.getConnection()) {
+
+            conn.setAutoCommit(false);
+
+            try {
+                int saldoAtual;
+                String codigoProduto;
+
+                try (PreparedStatement stmt = conn.prepareStatement(sqlBuscarOrdem)) {
+                    stmt.setInt(1, ordemId);
+
+                    try (ResultSet rs = stmt.executeQuery()) {
+                        if (!rs.next()) {
+                            throw new RuntimeException("OP_NOT_FOUND");
+                        }
+
+                        codigoProduto = rs.getString("codigo_produto");
+                        saldoAtual = rs.getInt("saldo_op");
+                    }
+                }
+
+                int setorId;
+
+                try (PreparedStatement stmt = conn.prepareStatement(sqlBuscarSetor)) {
+                    stmt.setString(1, apontamentoDTO.getCodigoSetor());
+
+                        try (ResultSet rs = stmt.executeQuery()) {
+                            if (!rs.next()) {
+                                throw new RuntimeException("SETOR_NOT_FOUND");
+                            }
+
+                            setorId = rs.getInt("id");
+                        }
+                    }
+
+                    int quantidadeApontada = apontamentoDTO.getQuantidadeApontada();
+
+                    if (quantidadeApontada > saldoAtual) {
+                        throw new RuntimeException("SALDO_INSUFICIENTE");
+                    }
+
+                    int novoSaldo = saldoAtual - quantidadeApontada;
+
+                    StatusOP novoStatus;
+
+                    if (novoSaldo == 0) {
+                        novoStatus = StatusOP.CONCLUIDA;
+                    } else {
+                        novoStatus = StatusOP.EM_PRODUÇÃO;
+                    }
+
+                    try (PreparedStatement stmt = conn.prepareStatement(sqlInserirApontamento)) {
+                        stmt.setInt(1, quantidadeApontada);
+                        stmt.setInt(2, setorId);
+                        stmt.setInt(3, ordemId);
+
+                        stmt.executeUpdate();
+                    }
+
+                    try (PreparedStatement stmt = conn.prepareStatement(sqlAtualizarOrdemProducao)) {
+                        stmt.setInt(1, novoSaldo);
+                        stmt.setString(2, novoStatus.name());
+                        stmt.setInt(3, ordemId);
+
+                        stmt.executeUpdate();
+                    }
+
+                    try (PreparedStatement stmt = conn.prepareStatement(sqlAtualizarEstoque)) {
+                        stmt.setString(1, codigoProduto);
+                        stmt.setInt(2, quantidadeApontada);
+                        stmt.setInt(3, setorId);
+                        stmt.setInt(4, ordemId);
+
+                        stmt.executeUpdate();
+                    }
+
+                    conn.commit();
+
+                    Map<String, Object> resposta = new LinkedHashMap<>();
+                    resposta.put("mensagem", "Apontamento registrado com sucesso");
+                    resposta.put("saldo_op", novoSaldo);
+                    resposta.put("status_OP", novoStatus);
+
+                    return resposta;
+
+                } catch (Exception e) {
+                    conn.rollback();
+                    throw e;
+                }
+            }catch (SQLException e){
+                throw new RuntimeException("Erro ao cadastrar Apontamento na ordem de produção " + ordemId, e );
+            }
         }
     }
-}
+
