@@ -1,6 +1,5 @@
 package com.metalflow.dao;
 
-import com.metalflow.model.EstoquesSetor;
 import com.metalflow.util.ConnectionFactory;
 
 import java.sql.Connection;
