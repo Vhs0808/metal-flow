@@ -19,7 +19,8 @@ public class EstoqueDAO {
         StringBuilder sql = new  StringBuilder("""
                 SELECT op.numero_op AS numero_OP, op.codigo_produto, s.codigo AS setor, es.quantidade
                 FROM estoques_setor es
-                INNER JOIN ordens_produtos op ON op.id = es.ordem_id
+                INNER JOIN ordens_producao
+                op ON op.id = es.ordem_id
                 INNER JOIN setores s ON s.id = es.setor_id
                 WHERE 1 = 1
                 """);
@@ -32,7 +33,7 @@ public class EstoqueDAO {
         }
 
         if(codigo_setor != null && !codigo_setor.isBlank()){
-            sql.append(" AND s.codigo_setor = ?");
+            sql.append(" AND s.codigo = ?");
             params.add(codigo_setor);
         }
 
