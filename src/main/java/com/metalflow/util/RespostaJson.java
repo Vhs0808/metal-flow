@@ -45,24 +45,24 @@ public class RespostaJson {
     public static void badRequest(HttpServletResponse res, String mensagem)
         throws IOException{
 
-        erro(res, HttpServletResponse.SC_BAD_REQUEST, mensagem);
+        erro(res, HttpServletResponse.SC_BAD_REQUEST, mensagem);//400
     }
 
     public static void notFound(HttpServletResponse res, String mensagem)
         throws IOException{
 
-        erro(res, HttpServletResponse.SC_NOT_FOUND, mensagem);
+        erro(res, HttpServletResponse.SC_NOT_FOUND, mensagem);//404
     }
 
     public static void conflict(HttpServletResponse res, String mensagem)
         throws IOException{
 
-        erro(res, HttpServletResponse.SC_CONFLICT, mensagem);
+        erro(res, HttpServletResponse.SC_CONFLICT, mensagem);//409
     }
 
     public static void internalServerError(HttpServletResponse res, String mensagem)
         throws IOException{
 
-        erro(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mensagem);
+        erro(res, HttpServletResponse.SC_INTERNAL_SERVER_ERROR, mensagem);//500
     }
 }
