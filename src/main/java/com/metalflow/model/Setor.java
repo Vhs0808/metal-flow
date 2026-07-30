@@ -1,14 +1,14 @@
 package com.metalflow.model;
 
-public class Setores {
+public class Setor {
     private int id;
     private String codigo;
     private String nome;
     private boolean ativo;
 
-    public Setores(){}
+    public Setor(){}
 
-    public Setores(int id, String codigo, String nome, boolean ativo) {
+    public Setor(int id, String codigo, String nome, boolean ativo) {
         this.id = id;
         this.codigo = codigo;
         this.nome = nome;
