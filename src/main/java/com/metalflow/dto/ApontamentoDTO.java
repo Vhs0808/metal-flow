@@ -1,9 +1,13 @@
 package com.metalflow.dto;
 
 
+import com.google.gson.annotations.SerializedName;
+
 public class ApontamentoDTO {
 
+    @SerializedName("codigo_setor")
     private String codigoSetor;
+    @SerializedName("quantidade_apontada")
     private int quantidadeApontada;
 
     public ApontamentoDTO(){}
