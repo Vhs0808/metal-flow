@@ -2,8 +2,11 @@ package com.metalflow.dao;
 
 import com.metalflow.dto.ApontamentoDTO;
 import com.metalflow.enums.StatusOP;
+import com.metalflow.exception.ConflictException;
+import com.metalflow.exception.NotFoundException;
 import com.metalflow.util.ConnectionFactory;
 
+import javax.servlet.http.HttpServletResponse;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -50,7 +53,7 @@ public class ApontamentoDAO {
         return apontamentos;
     }
 
-    public Map<String,Object> inserirApontamento(int ordemId, ApontamentoDTO apontamentoDTO){
+    public Map<String,Object> inserirApontamento(int ordemId, ApontamentoDTO apontamentoDTO, HttpServletResponse res){
 
         String sqlBuscarOrdem = """
                     SELECT id, codigo_produto, saldo_op
@@ -78,7 +81,7 @@ public class ApontamentoDAO {
                 """;
 
         String sqlAtualizarEstoque = """
-                    INSERT INTO estoque_setor (codigo_produto, quantidade,  setor_id, ordem_id)
+                    INSERT INTO estoques_setor (codigo_produto, quantidade,  setor_id, ordem_id)
                     VALUES (?,?,?,?)
                     ON DUPLICATE KEY UPDATE
                     quantidade = quantidade + VALUES(quantidade)
@@ -97,7 +100,7 @@ public class ApontamentoDAO {
 
                     try (ResultSet rs = stmt.executeQuery()) {
                         if (!rs.next()) {
-                            throw new RuntimeException("OP_NOT_FOUND");
+                            throw new NotFoundException("OP ou setor não encontrado");
                         }
 
                         codigoProduto = rs.getString("codigo_produto");
@@ -112,7 +115,7 @@ public class ApontamentoDAO {
 
                         try (ResultSet rs = stmt.executeQuery()) {
                             if (!rs.next()) {
-                                throw new RuntimeException("SETOR_NOT_FOUND");
+                                throw new NotFoundException("OP ou setor não encontrado.");
                             }
 
                             setorId = rs.getInt("id");
@@ -122,7 +125,7 @@ public class ApontamentoDAO {
                     int quantidadeApontada = apontamentoDTO.getQuantidadeApontada();
 
                     if (quantidadeApontada > saldoAtual) {
-                        throw new RuntimeException("SALDO_INSUFICIENTE");
+                        throw new ConflictException("Saldo insuficiente na OP");
                     }
 
                     int novoSaldo = saldoAtual - quantidadeApontada;
@@ -169,12 +172,12 @@ public class ApontamentoDAO {
 
                     return resposta;
 
-                } catch (Exception e) {
+                } catch (SQLException e) {
                     conn.rollback();
                     throw e;
                 }
-            }catch (SQLException e){
-                throw new RuntimeException("Erro ao cadastrar Apontamento na ordem de produção " + ordemId, e );
+            } catch (SQLException e) {
+                throw new RuntimeException("Erro ao cadastrar Apontamento na ordem de produção " + ordemId, e);
             }
         }
     }
