@@ -11,6 +11,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,8 +41,8 @@ public class ApontamentoDAO {
 
                     apontamento.put("setor", rs.getString("setor"));
                     apontamento.put("quantidade_apontada", rs.getInt("quantidade_apontada"));
-                    apontamento.put("data_apontamento", rs.getTimestamp("data_apontamento").toLocalDateTime());
-
+                    LocalDateTime data = rs.getTimestamp("data_apontamento").toLocalDateTime();
+                    apontamento.put("data_apontamento", data.format(DateTimeFormatter.ofPattern("dd/MM/yyyy 'às' HH:mm")));
                     apontamentos.add(apontamento);
                 }
 
@@ -53,7 +55,7 @@ public class ApontamentoDAO {
         return apontamentos;
     }
 
-    public Map<String,Object> inserirApontamento(int ordemId, ApontamentoDTO apontamentoDTO, HttpServletResponse res){
+    public Map<String,Object> inserirApontamento(int ordemId, ApontamentoDTO apontamentoDTO){
 
         String sqlBuscarOrdem = """
                     SELECT id, codigo_produto, saldo_op
@@ -135,7 +137,7 @@ public class ApontamentoDAO {
                     if (novoSaldo == 0) {
                         novoStatus = StatusOP.CONCLUIDA;
                     } else {
-                        novoStatus = StatusOP.EM_PRODUÇÃO;
+                        novoStatus = StatusOP.EM_PRODUCAO;
                     }
 
                     try (PreparedStatement stmt = conn.prepareStatement(sqlInserirApontamento)) {
